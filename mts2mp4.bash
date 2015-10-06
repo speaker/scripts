@@ -6,14 +6,15 @@ function func_help()
 {
 	echo "  --help or -h: this help"
 	echo "  --in=<input file name> or -i=<>"
-	#echo "  --suffix=<filename> where filename must match this suffix ex: MTS of name.MTS files -s=<>"
+	#echo "  --insuffix=<filename> where filename must match this input suffix ex: MTS of name.MTS files -s=<>"
 	echo "  --donothing or --testrun or -d Dont actuall do anything, just output commands"
 	echo "  --dir=<dir>rectory in which to perform action"
 	#echo "  --verbose|-v Verbose output"
 }
 
 CMD="ffmpeg.exe"
-SUFFIX="mp4"
+out_suffix="mp4"
+in_suffix="MTS"
 
 start_dir=`pwd`
 
@@ -33,13 +34,13 @@ for arg in "$@" ; do
 
 			basename=`echo ${arg} | awk -F'=' '{print $2}'`
 			;;
-		#--suffix=*|-s=*)
+		#--insuffix=*|-s=*)
 #
-			#if [[ "" != "$suffix" ]] ; then
-				#echo "Warning: Suffix was already set to ${suffix}. Resetting to new value."
+			#if [[ "" != "$in_suffix" ]] ; then
+				#echo "Warning: Suffix was already set to ${in_suffix}. Resetting to new value."
 			#fi
 #
-			#suffix=`echo ${arg} | awk -F'=' '{print $2}'`
+			#in_suffix=`echo ${arg} | awk -F'=' '{print $2}'`
 			#;;
 		--dono*|--testrun|-d)
 			test_run="true"
@@ -79,19 +80,28 @@ if [[ "" == "${inputfile}" && "" == "${newdir}" ]] ; then
 	echo -e "\e[31mError:\e[0m One of inputfile or directory must be set."
 	func_help
 	exit 1
-elif [[ ! -e ${inputfile} ]] ; then
+elif [[ "" != "${inputfile}" && "" != "${newdir}" ]] ; then
+	echo -e "\e[31mError:\e[0m Only one of inputfile or directory is allowed to be set."
+	func_help
+	exit 1
+elif [[ "" == "${inputfile}" ]] ; then
+	inputfile="$newdir"
+fi
+
+if [[ ! -e ${inputfile} ]] ; then
 	echo "File: ${inputfile} does not exist"
 elif [[ -f ${inputfile} ]] ; then
 	file_bad_basename=`echo ${file} | awk -F'.' '{$NF="";print $0}'`
 	file_basename=`echo ${file_bad_basename} | sed 's/ $//'`
 	if [[ "" != "$test_run" ]] ; then 
-		echo -e "\e[36mtestrun:\e[0m ${CMD} -i ${inputfile} -acodec copy -vcodec copy ${file_baseneme}.${SUFFIX}"
+		echo -e "\e[36mtestrun:\e[0m ${CMD} -i ${inputfile} -acodec copy -vcodec copy ${file_basename}.${out_suffix}"
 	else
-		echo ${CMD} -i "${inputfile} -acodec copy -vcodec copy ${file_baseneme}.${SUFFIX}"
-		${CMD} -i "${inputfile}" -acodec copy -vcodec copy "${file_baseneme}.${SUFFIX}"
+		echo ${CMD} -i "${inputfile} -acodec copy -vcodec copy ${file_basename}.${out_suffix}"
+		${CMD} -i "${inputfile}" -acodec copy -vcodec copy "${file_basename}.${out_suffix}"
 	fi
-elif [[ -d ${inputfile} ]] ; then
+elif [[ -d ${newdir} ]] ; then
 	for file in * ; do
+		echo DELME: file: ${file}
 		file_suf=`echo ${file} | awk -F'.' '{print $NF}'`
 		file_bad_basename=`echo ${file} | awk -F'.' '{$NF="";print $0}'`
 			#HACK ALERT: every file has a space placed at the end making the tests fail
@@ -100,17 +110,17 @@ elif [[ -d ${inputfile} ]] ; then
 
 		if [[ ! -f $file ]] ; then
 			if [[ "" != ${verb} ]] ; then echo -e "\e[33mskipping\e[0m \"${file}\" (not a file after all)" ; fi
-		elif [[ "${file_suf}" == "${suffix}" ]] ; then
+		elif [[ "${file_suf}" == "${in_suffix}" ]] ; then
 			newname=${basename}_${file}
 
 			if [[ "" != "$test_run" ]] ; then 
-				echo -e "\e[36mtestrun:\e[0m ${CMD} -i ${inputfile} -acodec copy -vcodec copy ${file_baseneme}.${SUFFIX}"
+				echo -e "\e[36mtestrun:\e[0m ${CMD} -i ${inputfile} -acodec copy -vcodec copy ${file_basename}.${out_suffix}"
 			else
-				echo ${CMD} -i "${inputfile} -acodec copy -vcodec copy ${file_baseneme}.${SUFFIX}"
-				${CMD} -i "${inputfile}" -acodec copy -vcodec copy "${file_baseneme}.${SUFFIX}"
+				echo ${CMD} -i "${inputfile} -acodec copy -vcodec copy ${file_basename}.${out_suffix}"
+				${CMD} -i "${inputfile}" -acodec copy -vcodec copy "${file_basename}.${out_suffix}"
 			fi
 		else
-			echo -e "\e[33mskipping\e[0m \"${file}\" (no suffix match)"
+			echo -e "\e[33mskipping\e[0m \"${file}\" (no input suffix match)"
 		fi
 	done
 else
