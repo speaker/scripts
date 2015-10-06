@@ -64,10 +64,6 @@ if [[ "" != ${verb} ]] ; then echo "newdir=${newdir}" ; fi
 cd "$newdir"
 cwd=`pwd`
 
-if [[ "" == "${basename}" ]] ; then
-	basename=`basename "${cwd}"`
-fi
-
 if [[ "" != ${verb} ]] ; then echo "inputfile=${basename}" ; fi
 if [[ "" != ${verb} ]] ; then echo "CMD=${CMD}" ; fi
 if [[ "" != ${verb} ]] ; then echo "test_run=${test_run}" ; fi
@@ -76,28 +72,28 @@ if [[ "" != ${verb} ]] ; then echo "working dir=${cwd}" ;  fi
 
 #ffmpeg.exe -i "E:\Video\TKD\2011 friendship\2011 friendship_00060.mts" -acodec copy -vcodec copy "E:\Video\TKD\2011 friendship\2011 friendship_00060.mp4
 
-if [[ "" == "${inputfile}" && "" == "${newdir}" ]] ; then
+if [[ "" == "${basename}" && "" == "${newdir}" ]] ; then
 	echo -e "\e[31mError:\e[0m One of inputfile or directory must be set."
 	func_help
 	exit 1
-elif [[ "" != "${inputfile}" && "" != "${newdir}" ]] ; then
+elif [[ "" != "${basename}" && "" != "${newdir}" ]] ; then
 	echo -e "\e[31mError:\e[0m Only one of inputfile or directory is allowed to be set."
 	func_help
 	exit 1
-elif [[ "" == "${inputfile}" ]] ; then
-	inputfile="$newdir"
+elif [[ "" == "${basename}" ]] ; then
+	basename="$newdir"
 fi
 
-if [[ ! -e ${inputfile} ]] ; then
-	echo "File: ${inputfile} does not exist"
-elif [[ -f ${inputfile} ]] ; then
-	file_bad_basename=`echo ${file} | awk -F'.' '{$NF="";print $0}'`
+if [[ ! -e ${basename} ]] ; then
+	echo "File: ${basename} does not exist"
+elif [[ -f ${basename} ]] ; then
+	file_bad_basename=`echo ${basename} | awk -F'.' '{$NF="";print $0}'`
 	file_basename=`echo ${file_bad_basename} | sed 's/ $//'`
 	if [[ "" != "$test_run" ]] ; then 
-		echo -e "\e[36mtestrun:\e[0m ${CMD} -i ${inputfile} -acodec copy -vcodec copy ${file_basename}.${out_suffix}"
+		echo -e "\e[36mtestrun:\e[0m ${CMD} -i ${basename} -acodec copy -vcodec copy ${file_basename}.${out_suffix}"
 	else
-		echo ${CMD} -i "${inputfile} -acodec copy -vcodec copy ${file_basename}.${out_suffix}"
-		${CMD} -i "${inputfile}" -acodec copy -vcodec copy "${file_basename}.${out_suffix}"
+		echo ${CMD} -i "${basename} -acodec copy -vcodec copy ${file_basename}.${out_suffix}"
+		${CMD} -i "${basename}" -acodec copy -vcodec copy "${file_basename}.${out_suffix}"
 	fi
 elif [[ -d ${newdir} ]] ; then
 	for file in * ; do
@@ -114,16 +110,16 @@ elif [[ -d ${newdir} ]] ; then
 			newname=${basename}_${file}
 
 			if [[ "" != "$test_run" ]] ; then 
-				echo -e "\e[36mtestrun:\e[0m ${CMD} -i ${inputfile} -acodec copy -vcodec copy ${file_basename}.${out_suffix}"
+				echo -e "\e[36mtestrun:\e[0m ${CMD} -i ${file} -acodec copy -vcodec copy ${file_basename}.${out_suffix}"
 			else
-				echo ${CMD} -i "${inputfile} -acodec copy -vcodec copy ${file_basename}.${out_suffix}"
-				${CMD} -i "${inputfile}" -acodec copy -vcodec copy "${file_basename}.${out_suffix}"
+				echo ${CMD} -i "${file} -acodec copy -vcodec copy ${file_basename}.${out_suffix}"
+				${CMD} -i "${file}" -acodec copy -vcodec copy "${file_basename}.${out_suffix}"
 			fi
 		else
 			echo -e "\e[33mskipping\e[0m \"${file}\" (no input suffix match)"
 		fi
 	done
 else
-	echo "I'm confused about File: ${inputfile}."
+	echo "I'm confused about File: ${file}."
 fi
 
