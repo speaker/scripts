@@ -7,7 +7,7 @@ function func_help()
 	echo "  --help or -h: this help"
 	echo "  --basename=<name to pre-pend when making new file> or -b=<>"
 	echo "  --suffix=<filename> where filename must match this suffix ex: MTS of name.MTS files -s=<>"
-	echo "  --donothing or --testtun or -d Dont actuall do anything, just output commands"
+	echo "  --donothing or --testrun or -d Dont actuall do anything, just output commands"
 	echo "  --move -mv -m Move do not copy files"
 	echo "  --dir=<dir>rectory in which to perform action"
 	echo "  --verbose|-v Verbose output"
